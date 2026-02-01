@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-black text-white font-mono;
+    overflow-x: hidden;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    body {
+      cursor: none;
+    }
+  }
+
+  /* Custom cursor */
+  #custom-cursor {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #00ff41;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: transform 0.1s ease;
+  }
+
+  #custom-cursor-trail {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: #ff1493;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.6;
+    transition: transform 0.15s ease;
+  }
+
+  /* CRT Scanlines */
+  .crt-scanlines::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      transparent 50%,
+      rgba(0, 255, 65, 0.03) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 10000;
+    animation: scanline 8s linear infinite;
+  }
+
+  /* ASCII borders */
+  .ascii-border {
+    border: 1px solid #00ff41;
+    position: relative;
+  }
+
+  .ascii-border::before,
+  .ascii-border::after {
+    content: '╔════════════════════════════════════╗';
+    position: absolute;
+    left: 0;
+    right: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #00ff41;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .ascii-border::before {
+    top: -12px;
+  }
+
+  .ascii-border::after {
+    bottom: -12px;
+    content: '╚════════════════════════════════════╝';
+  }
+
+  /* Text glow effects */
+  .text-glow-matrix {
+    text-shadow: 
+      0 0 10px #00ff41,
+      0 0 20px #00ff41,
+      0 0 30px #00ff41,
+      0 0 40px #00ff41;
+  }
+
+  .text-glow-tribal {
+    text-shadow: 
+      0 0 10px #ff1493,
+      0 0 20px #ff1493,
+      0 0 30px #ff1493;
+  }
+
+  /* Pixel art dithering */
+  .pixel-dither {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+
+  /* Cyberpunk glitch */
+  .glitch-text {
+    position: relative;
+    animation: glitch 0.3s infinite;
+  }
+
+  .glitch-text::before,
+  .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .glitch-text::before {
+    left: 2px;
+    text-shadow: -2px 0 #ff1493;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+  }
+
+  .glitch-text::after {
+    left: -2px;
+    text-shadow: -2px 0 #00ffff;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 1s infinite linear alternate-reverse;
+  }
+
+  @keyframes glitch-anim {
+    0% { clip: rect(31px, 9999px, 94px, 0); }
+    20% { clip: rect(54px, 9999px, 66px, 0); }
+    40% { clip: rect(28px, 9999px, 100px, 0); }
+    60% { clip: rect(68px, 9999px, 45px, 0); }
+    80% { clip: rect(12px, 9999px, 89px, 0); }
+    100% { clip: rect(75px, 9999px, 3px, 0); }
+  }
+
+  /* Terminal prompt */
+  .terminal-prompt::before {
+    content: '> ';
+    color: #00ff41;
+    margin-right: 0.5rem;
+  }
+
+  /* Hover distortion */
+  .hover-distort {
+    transition: all 0.3s ease;
+  }
+
+  .hover-distort:hover {
+    transform: scale(1.05) rotate(1deg);
+    filter: brightness(1.2) contrast(1.1);
+  }
+
+  /* Tattoo ink bleed effect */
+  .tattoo-bleed {
+    position: relative;
+  }
+
+  .tattoo-bleed::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle, rgba(255, 20, 147, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .tattoo-bleed:hover::after {
+    opacity: 1;
+  }
+
+  /* Anime speedlines */
+  .speedlines {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .speedlines::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 255, 65, 0.1) 10px,
+      rgba(0, 255, 65, 0.1) 20px
+    );
+    animation: speedline 0.5s linear infinite;
+  }
+
+  @keyframes speedline {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #000;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #ff1493;
+  }
+}

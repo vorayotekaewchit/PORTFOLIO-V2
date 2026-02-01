@@ -1,0 +1,42 @@
+[
+  {
+    "year": "2026",
+    "title": "Gabber OS",
+    "type": "webapp",
+    "aesthetic": "neo-tribal-tracker",
+    "embed": "iframe",
+    "desc": "Obsidian + Renoise ritual",
+    "link": "#",
+    "tags": ["React", "Renoise", "Obsidian"]
+  },
+  {
+    "year": "2025",
+    "title": "Breakcore Life OS",
+    "type": "webapp",
+    "aesthetic": "cyber-sigil",
+    "embed": "soundcloud",
+    "desc": "Full-stack tracker ecosystem",
+    "link": "#",
+    "tags": ["Node.js", "Three.js", "WebGL"]
+  },
+  {
+    "year": "2024",
+    "title": "Paris Underground Tracker",
+    "type": "music",
+    "aesthetic": "giger-biomech",
+    "embed": "renoise",
+    "desc": "Jungle/breakcore production suite",
+    "link": "#",
+    "tags": ["Renoise", "Web Audio API"]
+  },
+  {
+    "year": "2024",
+    "title": "Cyber-Sigil Generator",
+    "type": "webapp",
+    "aesthetic": "neo-tribal",
+    "embed": "github",
+    "desc": "WebGL shader-based sigil creator",
+    "link": "#",
+    "tags": ["Three.js", "GLSL", "React"]
+  }
+]

@@ -263,13 +263,11 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
   }, [])
 
   // ASCII Rain Particle System
-  const createASCIIRain = useCallback((scene: THREE.Scene, sigilGeometry: THREE.ExtrudeGeometry) => {
+  const createASCIIRain = useCallback((scene: THREE.Scene) => {
     const particleCount = 2000
     const positions = new Float32Array(particleCount * 3)
     const colors = new Float32Array(particleCount * 3)
     const sizes = new Float32Array(particleCount)
-    
-    const asciiChars = sigilsData.asciiChars.concat(sigilsData.runeChars)
     
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3
@@ -551,7 +549,7 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
     sigilMeshRef.current = sigilMesh
 
     // ASCII Rain
-    const asciiParticles = createASCIIRain(scene, sigilGeometry)
+    const asciiParticles = createASCIIRain(scene)
     asciiParticlesRef.current = asciiParticles
 
     // Pixel Art Sprites
@@ -628,7 +626,6 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
 
     // Mouse tracking
     const handleMouseMove = (e: MouseEvent) => {
-      const rect = containerRef.current!.getBoundingClientRect()
       setMouse({
         x: e.clientX / window.innerWidth,
         y: 1 - (e.clientY / window.innerHeight),

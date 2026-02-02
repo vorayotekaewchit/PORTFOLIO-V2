@@ -1,5 +1,4 @@
 import { useRef } from 'react'
-import { gsap } from 'gsap'
 import VSigilEngine from './VSigilEngine'
 import TattooCursor from './TattooCursor'
 

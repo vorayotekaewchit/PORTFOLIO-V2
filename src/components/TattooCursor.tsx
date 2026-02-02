@@ -43,6 +43,7 @@ export default function TattooCursor() {
 
     let mouseX = 0
     let mouseY = 0
+    let lastTrailAdd = 0
     const trailPoints: Array<{ x: number; y: number; life: number }> = []
 
     const updateCursor = (e: MouseEvent) => {
@@ -51,53 +52,60 @@ export default function TattooCursor() {
       cursor.style.left = `${mouseX}px`
       cursor.style.top = `${mouseY}px`
 
-      // Add trail point
-      trailPoints.push({ x: mouseX, y: mouseY, life: 1 })
-      if (trailPoints.length > 20) {
-        trailPoints.shift()
+      // Add trail point (throttled)
+      const now = performance.now()
+      if (now - lastTrailAdd > 16) { // ~60fps max
+        trailPoints.push({ x: mouseX, y: mouseY, life: 1 })
+        if (trailPoints.length > 15) { // Reduced from 20
+          trailPoints.shift()
+        }
+        lastTrailAdd = now
       }
     }
 
-    const animate = () => {
-      // Fade trail
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
-      ctx.fillRect(0, 0, trail.width, trail.height)
+    let lastTrailTime = 0
+    const trailInterval = 1000 / 30 // 30 FPS for cursor trail
+    
+    const animate = (currentTime: number) => {
+      // Throttle trail drawing to 30 FPS
+      if (currentTime - lastTrailTime >= trailInterval) {
+        // Fade trail
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'
+        ctx.fillRect(0, 0, trail.width, trail.height)
 
-      // Draw trail
-      trailPoints.forEach((point, i) => {
-        point.life -= 0.05
-        if (point.life > 0) {
-          const alpha = point.life
-          const size = 3 + i * 0.5
-          
-          // Ink bleed effect
-          const gradient = ctx.createRadialGradient(
-            point.x, point.y, 0,
-            point.x, point.y, size * 2
-          )
-          gradient.addColorStop(0, `rgba(255, 20, 147, ${alpha * 0.5})`)
-          gradient.addColorStop(0.5, `rgba(0, 255, 65, ${alpha * 0.3})`)
-          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-          
-          ctx.fillStyle = gradient
-          ctx.beginPath()
-          ctx.arc(point.x, point.y, size * 2, 0, Math.PI * 2)
-          ctx.fill()
-        }
-      })
+        // Draw trail (limit to 15 points max)
+        const maxPoints = 15
+        const pointsToDraw = trailPoints.slice(-maxPoints)
+        
+        pointsToDraw.forEach((point, i) => {
+          point.life -= 0.05
+          if (point.life > 0) {
+            const alpha = point.life
+            const size = 2 + i * 0.3 // Reduced size
+            
+            // Simplified ink bleed effect (no gradient for performance)
+            ctx.fillStyle = `rgba(255, 20, 147, ${alpha * 0.4})`
+            ctx.beginPath()
+            ctx.arc(point.x, point.y, size, 0, Math.PI * 2)
+            ctx.fill()
+          }
+        })
 
-      // Remove dead points
-      for (let i = trailPoints.length - 1; i >= 0; i--) {
-        if (trailPoints[i].life <= 0) {
-          trailPoints.splice(i, 1)
+        // Remove dead points
+        for (let i = trailPoints.length - 1; i >= 0; i--) {
+          if (trailPoints[i].life <= 0) {
+            trailPoints.splice(i, 1)
+          }
         }
+        
+        lastTrailTime = currentTime
       }
 
       requestAnimationFrame(animate)
     }
 
     document.addEventListener('mousemove', updateCursor)
-    animate()
+    animate(performance.now())
 
     // Hover effects
     const links = document.querySelectorAll('a, button, [role="button"]')

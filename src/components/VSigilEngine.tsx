@@ -205,7 +205,7 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
 
   // Pixel Art Sprite System
   const createPixelSprites = useCallback((scene: THREE.Scene) => {
-    const spriteCount = 50
+    const spriteCount = 20 // Reduced for performance
     const sprites: THREE.Sprite[] = []
     
     // Create procedural pixel art texture (16x16 knight plate)
@@ -263,7 +263,7 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
 
   // ASCII Rain Particle System
   const createASCIIRain = useCallback((scene: THREE.Scene) => {
-    const particleCount = 2000
+    const particleCount = 600 // Reduced for performance
     const positions = new Float32Array(particleCount * 3)
     const colors = new Float32Array(particleCount * 3)
     const sizes = new Float32Array(particleCount)
@@ -311,46 +311,54 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
     let terminalText = '> loading v_portfolio...'
     let cursorVisible = true
     let frame = 0
+    let lastDrawTime = 0
+    const drawInterval = 1000 / 30 // 30 FPS for terminal overlay
     
-    const draw = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      
-      // CRT scanlines
-      ctx.strokeStyle = 'rgba(0, 255, 65, 0.1)'
-      ctx.lineWidth = 1
-      for (let y = 0; y < canvas.height; y += 4) {
-        ctx.beginPath()
-        ctx.moveTo(0, y)
-        ctx.lineTo(canvas.width, y)
-        ctx.stroke()
+    const draw = (currentTime: number) => {
+      // Throttle terminal drawing to 30 FPS
+      if (currentTime - lastDrawTime >= drawInterval) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        
+        // CRT scanlines (only draw every 4th frame)
+        if (frame % 4 === 0) {
+          ctx.strokeStyle = 'rgba(0, 255, 65, 0.1)'
+          ctx.lineWidth = 1
+          for (let y = 0; y < canvas.height; y += 4) {
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(canvas.width, y)
+            ctx.stroke()
+          }
+        }
+        
+        // Terminal text
+        ctx.font = '14px "IBM Plex Mono", monospace'
+        ctx.fillStyle = '#00ff41'
+        ctx.shadowBlur = 10
+        ctx.shadowColor = '#00ff41'
+        
+        const text = terminalText + (cursorVisible ? '_' : '')
+        ctx.fillText(text, 20, canvas.height - 40)
+        
+        // Glitch effect on hover
+        if (isHovered) {
+          ctx.save()
+          ctx.globalAlpha = 0.3
+          ctx.fillStyle = '#ff1493'
+          ctx.fillText(text, 20 + Math.random() * 2, canvas.height - 40 + Math.random() * 2)
+          ctx.restore()
+        }
+        
+        frame++
+        if (frame % 30 === 0) cursorVisible = !cursorVisible
+        lastDrawTime = currentTime
       }
-      
-      // Terminal text
-      ctx.font = '14px "IBM Plex Mono", monospace'
-      ctx.fillStyle = '#00ff41'
-      ctx.shadowBlur = 10
-      ctx.shadowColor = '#00ff41'
-      
-      const text = terminalText + (cursorVisible ? '_' : '')
-      ctx.fillText(text, 20, canvas.height - 40)
-      
-      // Glitch effect on hover
-      if (isHovered) {
-        ctx.save()
-        ctx.globalAlpha = 0.3
-        ctx.fillStyle = '#ff1493'
-        ctx.fillText(text, 20 + Math.random() * 2, canvas.height - 40 + Math.random() * 2)
-        ctx.restore()
-      }
-      
-      frame++
-      if (frame % 30 === 0) cursorVisible = !cursorVisible
       
       requestAnimationFrame(draw)
     }
     
-    draw()
+    draw(performance.now())
     
     // Update terminal text based on phase
     const updateText = () => {
@@ -406,48 +414,61 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
       })
     }
     
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
-      // Speedlines
-      if (isHovered) {
-        ctx.strokeStyle = 'rgba(0, 255, 65, 0.3)'
-        ctx.lineWidth = 1
-        for (let i = 0; i < 20; i++) {
-          const x = (mouse.x * canvas.width) + (i * 10)
-          ctx.beginPath()
-          ctx.moveTo(x, 0)
-          ctx.lineTo(x, canvas.height)
-          ctx.stroke()
-        }
-      }
-      
-      // Particles
-      particles.forEach((p, i) => {
-        p.x += p.vx
-        p.y += p.vy
-        p.life -= 0.02
+    let lastParticleTime = 0
+    const particleInterval = 1000 / 30 // 30 FPS for particles
+    
+    const draw = (currentTime: number) => {
+      // Throttle particle drawing to 30 FPS
+      if (currentTime - lastParticleTime >= particleInterval) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
         
-        if (p.life > 0) {
-          ctx.save()
-          ctx.globalAlpha = p.life
-          ctx.fillStyle = '#00ff41'
-          ctx.beginPath()
-          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.restore()
-        } else {
-          particles.splice(i, 1)
+        // Speedlines (only when hovered)
+        if (isHovered) {
+          ctx.strokeStyle = 'rgba(0, 255, 65, 0.3)'
+          ctx.lineWidth = 1
+          for (let i = 0; i < 10; i++) { // Reduced from 20
+            const x = (mouse.x * canvas.width) + (i * 20)
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, canvas.height)
+            ctx.stroke()
+          }
         }
-      })
+        
+        // Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i]
+          p.x += p.vx
+          p.y += p.vy
+          p.life -= 0.02
+          
+          if (p.life > 0) {
+            ctx.save()
+            ctx.globalAlpha = p.life
+            ctx.fillStyle = '#00ff41'
+            ctx.beginPath()
+            ctx.arc(p.x, p.y, 2, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.restore()
+          } else {
+            particles.splice(i, 1)
+          }
+        }
+        
+        lastParticleTime = currentTime
+      }
       
       requestAnimationFrame(draw)
     }
     
-    draw()
+    draw(performance.now())
     
-    // Add particles on mouse move near sigil
+      // Add particles on mouse move near sigil (throttled)
+    let lastParticleAdd = 0
     const handleMouseMove = (e: MouseEvent) => {
+      const now = performance.now()
+      if (now - lastParticleAdd < 100) return // Throttle to max 10 particles/sec
+      
       const rect = canvas.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
@@ -455,8 +476,9 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
       const centerY = canvas.height / 2
       const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2)
       
-      if (dist < 200 && Math.random() > 0.7) {
+      if (dist < 200 && Math.random() > 0.8) { // Reduced probability
         addParticle(x, y)
+        lastParticleAdd = now
       }
     }
     
@@ -512,7 +534,8 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
     })
     
     renderer.setSize(window.innerWidth, window.innerHeight)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)) // Reduced for performance
+    renderer.setClearColor(0x000000, 0) // Optimize clearing
     
     sceneRef.current = scene
     cameraRef.current = camera
@@ -563,42 +586,57 @@ export default function VSigilEngine({ onSigilClick, audioSource, audioContext }
       .to(sigilMesh.scale, { x: 1.5, y: 1.5, z: 1.5, duration: 2, ease: 'power3.out' }, 1)
       .to({}, { duration: 1, onComplete: () => setPhase('complete') }, 2)
 
-    // Animation loop
+    // Animation loop with performance optimization
     let time = 0
-    const animate = () => {
-      time += 0.016
+    let lastFrameTime = performance.now()
+    const targetFPS = 60
+    const frameInterval = 1000 / targetFPS
+    let frameCount = 0
+    
+    const animate = (currentTime: number) => {
+      const deltaTime = currentTime - lastFrameTime
       
-      if (material.uniforms) {
-        material.uniforms.time.value = time
-        material.uniforms.audioBass.value = audioBass
-        material.uniforms.mouse.value.set(mouse.x, mouse.y)
-      }
-      
-      // Rotate sigil
-      if (sigilMesh) {
-        sigilMesh.rotation.y = time * 0.2
-        sigilMesh.rotation.x = Math.sin(time * 0.3) * 0.1
-      }
-      
-      // Animate ASCII particles (coalesce to form V)
-      if (asciiParticles) {
-        const positions = asciiParticles.geometry.attributes.position.array as Float32Array
-        for (let i = 0; i < positions.length; i += 3) {
-          const targetX = (i / 3) % 100 < 50 ? -0.5 : 0.5
-          const targetY = -0.5 + ((i / 3) % 100) / 100
-          positions[i] += (targetX - positions[i]) * 0.01
-          positions[i + 1] += (targetY - positions[i + 1]) * 0.01
+      // Throttle to target FPS
+      if (deltaTime >= frameInterval) {
+        time += 0.016
+        
+        if (material.uniforms) {
+          material.uniforms.time.value = time
+          material.uniforms.audioBass.value = audioBass
+          material.uniforms.mouse.value.set(mouse.x, mouse.y)
         }
-        asciiParticles.geometry.attributes.position.needsUpdate = true
+        
+        // Rotate sigil
+        if (sigilMesh) {
+          sigilMesh.rotation.y = time * 0.2
+          sigilMesh.rotation.x = Math.sin(time * 0.3) * 0.1
+        }
+        
+        // Animate ASCII particles (throttled - only every 3rd frame)
+        if (asciiParticles && frameCount % 3 === 0) {
+          const positions = asciiParticles.geometry.attributes.position.array as Float32Array
+          for (let i = 0; i < positions.length; i += 3) {
+            const targetX = (i / 3) % 100 < 50 ? -0.5 : 0.5
+            const targetY = -0.5 + ((i / 3) % 100) / 100
+            positions[i] += (targetX - positions[i]) * 0.01
+            positions[i + 1] += (targetY - positions[i + 1]) * 0.01
+          }
+          asciiParticles.geometry.attributes.position.needsUpdate = true
+        }
+        
+        // Animate pixel sprites (throttled - only every 2nd frame)
+        if (frameCount % 2 === 0) {
+          pixelSprites.forEach((sprite, i) => {
+            sprite.rotation.z += 0.01
+            sprite.position.y += Math.sin(time + i) * 0.001
+          })
+        }
+        
+        renderer.render(scene, camera)
+        lastFrameTime = currentTime - (deltaTime % frameInterval)
+        frameCount++
       }
       
-      // Animate pixel sprites
-      pixelSprites.forEach((sprite, i) => {
-        sprite.rotation.z += 0.01
-        sprite.position.y += Math.sin(time + i) * 0.001
-      })
-      
-      renderer.render(scene, camera)
       animationFrameRef.current = requestAnimationFrame(animate)
     }
     

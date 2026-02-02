@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { gsap } from 'gsap'
 import * as THREE from 'three'
-import sigilsData from '../data/sigils.json'
 
 // Shader code
 const vertexShader = `
